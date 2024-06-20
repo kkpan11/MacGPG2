@@ -30,7 +30,14 @@ function logging {
 	
 	touch "$LOGFILE"
 	owner=$(stat -f "%u" "${LOGFILE%/*}")
-	[[ -n "$owner" ]] && chown "$owner" "$LOGFILE"
+
+	# Use the `-h` option for `chown` to make sure that
+	# if the changed file / folder is a symlink, only
+	# the symlinkn itself has its permission changed, and not
+	# the target file.
+	# Otherwise an attacker could abuse that, to e.g. chown
+	# a root-owned file to a user owned file.
+	[[ -n "$owner" ]] && chown -h "$owner" "$LOGFILE"
 	
 	tempdir=$(mktemp -d -t org.gpgtools.log)
 	if [[ -d "$tempdir" ]]; then
@@ -71,7 +78,7 @@ function fixGpgHome {
 	fi
 	
 	chmod -RN "$GNUPGHOME" 2>/dev/null # Remove ACL.
-	chown -R "$ACTUAL_UID${HOME_GROUP}" "$GNUPGHOME"
+	chown -Rh "$ACTUAL_UID${HOME_GROUP}" "$GNUPGHOME"
 	chmod -R u+rwX,go= "$GNUPGHOME"
 	
 	log "Fixing done"
