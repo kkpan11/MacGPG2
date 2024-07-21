@@ -1,0 +1,72 @@
+# Changes the default keyserver to pgpkeys.eu
+#
+# Ubuntu Keyserver stopped to synchronize with other keyservers
+# to resolve a flooding issue. 
+# pgpkeys.eu is based on Hockeypuck, has a cleansed set of keys
+# and contains poison protections.
+
+diff --git a/configure b/configure
+index c8c992a..e8fbe57 100755
+--- a/configure
++++ b/configure
+@@ -15953,7 +15953,7 @@ _ACEOF
+ 
+ 
+ cat >>confdefs.h <<_ACEOF
+-#define DIRMNGR_DEFAULT_KEYSERVER "hkps://keyserver.ubuntu.com"
++#define DIRMNGR_DEFAULT_KEYSERVER "hkps://pgpkeys.eu"
+ _ACEOF
+ 
+ 
+diff --git a/configure.ac b/configure.ac
+index b583d16..da03971 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1828,7 +1828,7 @@ AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
+ AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
+                    [The name of the dirmngr socket])
+ AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
+-                   "hkps://keyserver.ubuntu.com",
++                   "hkps://pgpkeys.eu",
+       [The default keyserver for dirmngr to use, if none is explicitly given])
+ 
+ AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
+diff --git a/dirmngr/server.c b/dirmngr/server.c
+index bf4e891..fe44d51 100644
+--- a/dirmngr/server.c
++++ b/dirmngr/server.c
+@@ -2145,22 +2145,30 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
+    */
+   if (!strcmp (uri, "hkps://keys.gnupg.net")
+       || !strcmp (uri, "keys.gnupg.net"))
+-    uri = "hkps://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
+   else if (!strcmp (uri, "https://keys.gnupg.net"))
+-    uri = "hkps://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
+   else if (!strcmp (uri, "hkp://keys.gnupg.net"))
+     uri = "hkp://pgp.surf.nl";
+   else if (!strcmp (uri, "http://keys.gnupg.net"))
+     uri = "hkp://pgp.surf.nl:80";
+   else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
+            || !strcmp (uri, "http-keys.gnupg.net"))
+-    uri = "hkps://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
+   else if (!strcmp (uri, "https://http-keys.gnupg.net"))
+-    uri = "hkps://keyserver.ubuntu.com";
++    uri = "hkps://pgpkeys.eu";
+   else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
+     uri = "hkp://pgp.surf.nl";
+   else if (!strcmp (uri, "http://http-keys.gnupg.net"))
+     uri = "hkp://pgp.surf.nl:80";
++  /* Ubuntu Keyserver stopped to synchronize with other keyservers
++     to resolve a flooding issue. 
++     pgpkeys.eu is based on Hockeypuck, has a cleansed set of keys
++     and contains poison protections.
++    */
++  else if (!strcmp (uri, "hkps://keyserver.ubuntu.com")
++           || !strcmp(uri, "keyserver.ubuntu.com"))
++    uri = "hkps://pgpkeys.eu/";
+ 
+   return ks_action_parse_uri (uri, r_item);
+ }
