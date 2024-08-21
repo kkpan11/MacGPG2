@@ -159,7 +159,11 @@ function define_build_vars {
 	fi
 
 	build_cflags="${build_cflags} -I${arch_dist_dir}/include ${build_arch_flags}"
-	build_ldflags="-L${arch_dist_dir}/lib ${build_arch_flags}"
+	# When libgcrypt is built using clang 5 it crashes when running tests
+	# and later on runtime when for example signing a message with a 4096 rsa key.
+	# To solve this issue it is necessary to disable the new linker introduced in
+	# clang 5 by passing the `-ld_classic` flag to the linker arguments.
+	build_ldflags="-L${arch_dist_dir}/lib ${build_arch_flags} -ld_classic"
 	build_cxxflags="${build_cflags}"
 	build_cppflags="${build_cflags}"
 }
@@ -240,6 +244,13 @@ function pre_build {
 function post_build {
 	if [[ "$lib_name" = "gettext" ]]; then
 		popd || exit
+	fi
+	# Run libgcrypt tests after building for x86_64 to make sure
+	# that the library doesn't crash. See the explanation for
+	# `-ld_classic` flag. 
+	if [[ "$lib_name" == "libgcrypt" ]] && [[ "$dest_arch" == "x86_64" ]]; then
+		echo "* Running libgcrypt tests to make sure "
+		make check || do_fail "${lib_name}: failed running tests"
 	fi
 }
 
