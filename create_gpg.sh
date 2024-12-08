@@ -80,7 +80,7 @@ function do_fail {
 	exit 1
 }
 function pycmd {
-	python -c "c=$config
+	python3 -c "c=$config
 $1"
 }
 
@@ -193,6 +193,12 @@ function post_configure_for_libtasn1 {
 	# so replace the Makefile with a dummy one.
 	echo -e "all:\n\techo test\n\ninstall:\n\techo install" > ./tests/Makefile
 	echo -e "all:\n\techo test\n\ninstall:\n\techo install" > ./examples/Makefile
+}
+
+function customize_build_for_libassuan {
+  # Fixes duplicate symbols errors - https://lists.gnupg.org/pipermail/gnupg-devel/2024-July/035614.html
+  build_cflags="${build_cflags} -std=gnu89"
+  cache_file="$WORKING_DIR/config.${dest_arch}.assuan.cache"
 }
 
 function customize_build_for_gnupg {
@@ -495,7 +501,7 @@ function verify {
 echo -n "Build started at "; date
 
 # Read libs.json
-config=$(python -c "import sys,json; print(json.loads(sys.stdin.read()))" < "$BASE_DIR/libs.json" 2>/dev/null) || do_fail "read libs.json"
+config=$(python3 -c "import sys,json; print(json.loads(sys.stdin.read()))" < "$BASE_DIR/libs.json" 2>/dev/null) || do_fail "read libs.json"
 count=$(pycmd "print(len(c))") || do_fail "process libs.json"
 
 if [[ -n "${TOOL}" ]]; then
