@@ -195,6 +195,11 @@ function post_configure_for_libtasn1 {
 	echo -e "all:\n\techo test\n\ninstall:\n\techo install" > ./examples/Makefile
 }
 
+function customize_build_for_libassuan {
+  # Fixes duplicate symbols errors - https://lists.gnupg.org/pipermail/gnupg-devel/2024-July/035614.html
+  build_cflags="${build_cflags} -std=gnu89"
+}
+
 function customize_build_for_gnupg {
 	build_cflags="${build_cflags} -I${arch_dist_dir}/include -I${arch_dist_dir}/include/libusb-1.0/"
 	build_cflags="${build_cflags} -UGNUPG_BINDIR -DGNUPG_BINDIR=\"\\\"${TARGET_DIR}/bin\\\"\" \
